@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VerificationEmail;
 use DB;
 use Artisan;
 
@@ -54,8 +58,35 @@ class UsersController extends Controller {
         $user->assignRole('Customer'); 
         
         return redirect('/');
+        $title = "Verification Link";
+        $token = Crypt::encryptString(json_encode(['id' => $user->id, 'email' => $user->email]));
+        $link = route("verify", ['token' => $token]);
+        Mail::to($user->email)->send(new VerificationEmail($link, $user->name));
+        return redirect('/');
         
     }
+    public function verify(Request $request)
+    {
+        try {
+            $decryptedData = json_decode(Crypt::decryptString($request->token), true);
+    
+            $user = User::find($decryptedData['id']);
+    
+            if (!$user) {
+                abort(401);
+            }
+    
+            $user->email_verified_at = Carbon::now();
+            $user->save();
+    
+            return view('users.verified', compact('user'));
+    
+        } catch (\Exception $e) {
+            // You might want to log the error or show a custom error page
+            abort(401, 'Invalid or expired token.');
+        }
+    }
+    
 
     public function login(Request $request) {
         return view('users.login');
