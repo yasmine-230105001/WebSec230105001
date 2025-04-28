@@ -24,7 +24,14 @@
       <div class="form-group mb-2">
         <button type="submit" class="btn btn-primary">Login</button>
       </div>
-    </form>
+      </form>
+      
+      <div class="text-center mt-3">
+        <p>Or login with:</p>
+        <a href="{{ route('github.login') }}" class="btn btn-dark">
+          <i class="fab fa-github"></i> Login with GitHub
+        </a>
+      </div>
     </div>
   </div>
 </div>

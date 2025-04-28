@@ -3,6 +3,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\ProductsController;
 use App\Http\Controllers\Web\UsersController;
+use App\Http\Controllers\Web\SocialAuthController;
 
 Route::get('register', [UsersController::class, 'register'])->name('register');
 Route::post('register', [UsersController::class, 'doRegister'])->name('do_register');
@@ -20,7 +21,9 @@ Route::post('/admin/add-employee', [UsersController::class, 'storeEmployee'])->n
 
 Route::get('verify', [UsersController::class, 'verify'])->name('verify');
 
-
+// GitHub Authentication Routes
+Route::get('auth/github', [SocialAuthController::class, 'redirectToGithub'])->name('github.login');
+Route::get('auth/github/callback', [SocialAuthController::class, 'handleGithubCallback'])->name('github.callback');
 
 Route::get('products', [ProductsController::class, 'list'])->name('products_list');
 Route::get('products/edit/{product?}', [ProductsController::class, 'edit'])->name('products_edit');
