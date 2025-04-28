@@ -45,35 +45,48 @@ class UsersController extends Controller {
 	    	]);
     	}
     	catch(\Exception $e) {
-
     		return redirect()->back()->withInput($request->input())->withErrors('Invalid registration information.');
     	}
 
-    	
-    	$user =  new User();
+    	$user = new User();
 	    $user->name = $request->name;
 	    $user->email = $request->email;
-	    $user->password = bcrypt($request->password); //Secure
+	    $user->password = bcrypt($request->password);
         $user->save();
         $user->assignRole('Customer'); 
         
-        return redirect('/');
-        $title = "Verification Link";
+        // Generate verification token and send email
         $token = Crypt::encryptString(json_encode(['id' => $user->id, 'email' => $user->email]));
         $link = route("verify", ['token' => $token]);
         Mail::to($user->email)->send(new VerificationEmail($link, $user->name));
-        return redirect('/');
         
+        return redirect('/')->with('success', 'Registration successful! Please check your email to verify your account.');
     }
     public function verify(Request $request)
     {
         try {
+            if (!$request->has('token')) {
+                return redirect('/')->with('error', 'Verification token is missing.');
+            }
+
             $decryptedData = json_decode(Crypt::decryptString($request->token), true);
+    
+            if (!isset($decryptedData['id']) || !isset($decryptedData['email'])) {
+                return redirect('/')->with('error', 'Invalid verification token.');
+            }
     
             $user = User::find($decryptedData['id']);
     
             if (!$user) {
-                abort(401);
+                return redirect('/')->with('error', 'User not found.');
+            }
+    
+            if ($user->email !== $decryptedData['email']) {
+                return redirect('/')->with('error', 'Email verification failed.');
+            }
+    
+            if ($user->email_verified_at) {
+                return redirect('/')->with('info', 'Email has already been verified.');
             }
     
             $user->email_verified_at = Carbon::now();
@@ -82,8 +95,7 @@ class UsersController extends Controller {
             return view('users.verified', compact('user'));
     
         } catch (\Exception $e) {
-            // You might want to log the error or show a custom error page
-            abort(401, 'Invalid or expired token.');
+            return redirect('/')->with('error', 'Invalid or expired verification link.');
         }
     }
     
