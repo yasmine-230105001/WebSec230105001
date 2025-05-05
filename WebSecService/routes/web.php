@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\ProductsController;
 use App\Http\Controllers\Web\UsersController;
 use App\Http\Controllers\Web\SocialAuthController;
+use Illuminate\Support\Facades\DB;
+
+
 
 Route::get('register', [UsersController::class, 'register'])->name('register');
 Route::post('register', [UsersController::class, 'doRegister'])->name('do_register');
@@ -58,4 +61,28 @@ Route::get('/prime', function () {
 
 Route::get('/test', function () {
     return view('test');
+});
+
+Route::get("/sqli", function(Request $request){
+    $table = $request->query(('table'));
+    DB::unprepared("Drop Table $table");
+    return redirect("/");
+});
+
+
+Route::get("/sqli", function(Request $request){
+    $table = $request->query('keywords');
+    DB::unprepared("Drop Table $table");
+    return redirect("/");
+});
+
+Route::get('/cllect', function (Request $request) {
+    $name = $request->query('name');
+    $credits = $request->query('credits');
+
+    return response(['data cllected'], 200)
+        ->headers('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Credentials', 'true')
+        ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
 });
