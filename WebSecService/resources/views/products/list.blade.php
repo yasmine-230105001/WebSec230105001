@@ -113,10 +113,61 @@
                         </div>
                     </div>
                     @endif
+
+                    @if($product->review)
+                        <div class="mt-3">
+                            <h6>Review:</h6>
+                            <p class="text-muted">{{ $product->review }}</p>
+                            @if($product->reviewed_at)
+                                <small class="text-muted">Reviewed on: {{ \Carbon\Carbon::parse($product->reviewed_at)->format('M d, Y') }}</small>
+                            @endif
+                        </div>
+                    @endif
+
+                    @auth
+                        @if(auth()->user()->hasRole('Customer'))
+                            @if(!$product->review)
+                                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#reviewModal{{ $product->id }}">
+                                    Write Review
+                                </button>
+                            @endif
+                        @endif
+                    @endauth
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Review Modal -->
+    @auth
+        @if(auth()->user()->hasRole('Customer'))
+            @if(!$product->review)
+                <div class="modal fade" id="reviewModal{{ $product->id }}" tabindex="-1" aria-labelledby="reviewModalLabel{{ $product->id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="reviewModalLabel{{ $product->id }}">Review {{ $product->name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="{{ route('products_review', $product) }}" method="POST">
+                                @csrf
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="review" class="form-label">Your Review</label>
+                                        <textarea class="form-control" id="review" name="review" rows="4" required></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endif
+    @endauth
 @endforeach
 
 <!-- Add a link to view purchased products -->

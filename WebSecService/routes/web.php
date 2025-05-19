@@ -179,3 +179,5 @@ Route::get('/cryptography', function (Request $request) {
     
     return view('cryptography', compact('data', 'result', 'action', 'status'));
     })->name('cryptography');
+
+Route::post('/products/{product}/review', [ProductsController::class, 'review'])->name('products_review');

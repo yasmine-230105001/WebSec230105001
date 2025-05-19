@@ -131,4 +131,25 @@ class ProductsController extends Controller
 
         return view('products.purchased', compact('purchasedProducts'));
     }
+
+    public function review(Request $request, Product $product)
+    {
+        $user = auth()->user();
+
+        // Only check if user is a Customer
+        if (!$user->hasRole('Customer')) {
+            abort(403, 'Only customers can review products.');
+        }
+
+        $this->validate($request, [
+            'review' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $product->review = $request->review;
+        $product->reviewed_by = $user->id;
+        $product->reviewed_at = \Carbon\Carbon::now();
+        $product->save();
+
+        return redirect()->route('products_list')->with('success', 'Review submitted successfully!');
+    }
 }
