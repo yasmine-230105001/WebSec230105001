@@ -9,20 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('purchases', function (Blueprint $table) {
-            if (!Schema::hasColumn('purchases', 'quantity')) {
-                $table->integer('quantity')->nullable();
-            } else {
-                $table->integer('quantity')->nullable()->change();
-            }
+            $table->integer('quantity')->nullable();
         });
     }
 
     public function down(): void
     {
         Schema::table('purchases', function (Blueprint $table) {
-            if (Schema::hasColumn('purchases', 'quantity')) {
-                $table->integer('quantity')->nullable(false)->change();
-            }
+            $table->dropColumn('quantity');
         });
     }
 };
